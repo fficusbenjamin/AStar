@@ -8,9 +8,8 @@ namespace AICoursework
 {
     class Cave
     {
-        public int xCoord, yCoord;
-
-
+        public int xCoord, yCoord, caveNumber;
+        public List<Cave> relationships = new List<Cave>();
 
     }
 }
