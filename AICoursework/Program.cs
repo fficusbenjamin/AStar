@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace AICoursework
 {
@@ -10,62 +11,115 @@ namespace AICoursework
     {
         static void Main(string[] args)
         {
-
-            List<Cave> caves = new List<Cave>();
-
-
-            //string inputFile = System.IO.File.ReadAllText(@"C:\Users\Francesco\Desktop\AI Courserwork\caverns files\input1.cav");
-            //string inputFile = System.IO.File.ReadAllText(@"/Users/francesco/Desktop/caverns files/input1.cav");
-            string inputFile = "7,2,8,3,2,14,5,7,6,11,2,11,6,14,1,0,0,0,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0";
-
-
-            string[] coord =inputFile.Split(',');
-            int firstNum = Convert.ToInt32(coord[0]);
-            int currentCave = (firstNum * 2);
-
-            int num = 1;
-            for (int i=1; i<=firstNum*2;i++) 
+            if (args[0] != null) 
             {
-                Cave cave= new Cave();
-                cave.caveNumber = num;
-                cave.xCoord = Convert.ToInt32(coord[i]);
-                i++;
-                num++;
-                cave.yCoord = Convert.ToInt32(coord[i]);
-                caves.Add(cave);
-
-                System.Console.WriteLine(cave.caveNumber + " - " + cave.xCoord+", " + cave.yCoord);
-
-                
-
-                
+                List<Cave> caves = new List<Cave>();
+                string inputFile = File.ReadAllText(args[0]);
+                string[] coord =inputFile.Split(',');
+                int firstNum = Convert.ToInt32(coord[0]);
+                int currentCave = (firstNum * 2);
+                int counter = 1;
+                int num = 1;
+                for (int i=1; i<=firstNum*2;i++) 
+                {
+                    Cave cave= new Cave();
+                    cave.caveNumber = num;
+                    cave.xCoord = Convert.ToInt32(coord[i]);
+                    i++;
+                    num++;
+                    cave.yCoord = Convert.ToInt32(coord[i]);
+                    caves.Add(cave);                    
+                }
+                foreach (Cave cave1 in caves)
+                {
+                    addVertice(currentCave, firstNum, cave1, caves, coord, counter);
+                    currentCave = currentCave + firstNum;
+                }
+                string path = A_Star(caves[0], caves, firstNum);
+                string[] endFile = args[0].Split('.');
+                string writePath = endFile[0] + ".csn";
+                File.WriteAllText(writePath, path);
             }
-
-            foreach (Cave cave1 in caves)
-            {
-
-                currentCave = currentCave + firstNum;
-                addVertice(currentCave, firstNum, cave1, caves, coord);
-                System.Console.WriteLine(currentCave);
-
-            }
-
-
-            System.Console.ReadLine();
-
         }
 
-
-
-        static void addVertice(int currentCave, int firstNum, Cave cave, List<Cave> caves, string[] inputFile)
+        static void addVertice(int currentCave, int firstNum, Cave cave, List<Cave> caves, string[] inputFile, int counter)
         {
             for (int i=0; i<firstNum;i++)
             {
-                if (Convert.ToInt16(inputFile[currentCave-1]) == 1) {
+                if (Convert.ToInt32(inputFile[currentCave + counter]) == 1) {
 
-                    caves[i+1].relationships.Add(cave);
+                    caves[i].relationships.Add(cave);
+                }
+                counter++;
+            }
+        }
+        static string reconPath(Cave startCave, Cave endCave) 
+        {
+            List<int> solution = new List<int>();
+            Cave currentCave = endCave;
+            string strngSol = "";
+            if (endCave.cameFrom != null)
+            {
+                while (currentCave != startCave)
+                {
+                    solution.Add(currentCave.caveNumber);
+                    currentCave = currentCave.cameFrom;
+                }
+                solution.Add(startCave.caveNumber);
+                solution.Reverse();
+                foreach (int cave in solution)
+                {
+                    strngSol = strngSol + cave + ", ";
                 }
             }
+            return strngSol;
+        }
+        
+        static string A_Star(Cave startCave, List<Cave> caves, int firstNum)
+        {
+            List<Cave> unexpCaves = new List<Cave>();
+            Cave endCave = caves[firstNum - 1];
+            startCave.fScore = getDist(startCave, endCave);
+            startCave.gScore = 0;
+            unexpCaves.Add(startCave);
+            Cave currentCave;
+            string path;
+            while (unexpCaves.Count > 0) 
+            {
+                currentCave = unexpCaves[0];
+                if (currentCave == endCave) 
+                {
+                    path = reconPath(startCave,endCave);
+                    return path;
+                }
+                unexpCaves.Remove(currentCave);
+
+                foreach(Cave relationship in currentCave.relationships)
+                {
+                    double d = getDist(currentCave, relationship);
+                    double tent_gScore = currentCave.gScore + d;
+                    if (tent_gScore < relationship.gScore) 
+                    {
+                        relationship.cameFrom = currentCave;
+                        relationship.gScore = tent_gScore;
+                        relationship.fScore = relationship.gScore + relationship.hScore;
+                        if (unexpCaves.Contains(relationship) == false) 
+                        {
+                            unexpCaves.Add(relationship);
+                        }
+                    }
+                }
+                unexpCaves.OrderBy(x=>x.fScore);
+            }
+
+            path = "No route found";
+            return path;
+        }
+
+        public static double getDist(Cave cave1, Cave cave2) 
+        {
+            double distance = Math.Sqrt(Math.Pow((cave2.xCoord - cave1.xCoord), 2) + Math.Pow((cave2.yCoord - cave1.yCoord), 2));
+            return distance;
         }
     }
 }
