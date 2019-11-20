@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
 
 namespace AICoursework
 {
@@ -13,7 +10,6 @@ namespace AICoursework
         public double fScore = double.MaxValue;
         public double hScore = double.MaxValue;
         public List<Cave> relationships = new List<Cave>();
-        public Cave cameFrom;
-        
+        public Cave cameFrom;        
     }
 }
