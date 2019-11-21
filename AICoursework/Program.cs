@@ -12,7 +12,7 @@ namespace AICoursework
             if (args[0] != null) 
             {
                 List<Cave> caves = new List<Cave>();
-                string inputFile = File.ReadAllText(args[0]);
+                string inputFile = File.ReadAllText(args[0] + ".cav");
                 string[] coord =inputFile.Split(',');
                 int firstNum = Convert.ToInt32(coord[0]);
                 int currentCave = (firstNum * 2);
@@ -67,7 +67,7 @@ namespace AICoursework
                 solution.Reverse();
                 foreach (int cave in solution)
                 {
-                    strngSol = strngSol + cave + ", ";
+                    strngSol = strngSol + cave + " ";
                 }
             }
             return strngSol;
@@ -110,7 +110,7 @@ namespace AICoursework
                 unexpCaves.OrderBy(x=>x.fScore);
             }
 
-            path = "No route found";
+            path = "0";
             return path;
         }
 
